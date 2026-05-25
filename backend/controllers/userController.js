@@ -180,12 +180,12 @@ const changeUserPassword = asyncHandler(async (req, res) => {
   res.json({ message: "Password updated successfully" });
 });
 const logoutUser = (req, res) => {
-  res.cookie("token", "", {
+  res.clearCookie("token", {
     httpOnly: true,
-    expires: new Date(0),
-    sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   });
+
   res.json({ message: "Logged out successfully" });
 };
 
