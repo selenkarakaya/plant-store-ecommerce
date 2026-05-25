@@ -6,14 +6,11 @@ An e-commerce web application for selling houseplants, built with modern technol
 
 ### 🚀 Live Demo
 
-| 🌐  Live Application | 🔑  Test Account |
-|--------------------|----------------|
+| 🌐 Live Application                                                 | 🔑 Test Account                                 |
+| ------------------------------------------------------------------- | ----------------------------------------------- |
 | 👉 [Click here](https://plantstore-production-748f.up.railway.app/) | 👉 Email: test@plantstore.com, Password: 123456 |
 
 </div>
-
-
-
 
 ## 🧱 Tech Stack
 
@@ -34,18 +31,20 @@ An e-commerce web application for selling houseplants, built with modern technol
 - Google OAuth 2.0
 
 ---
+
 <div align="center">
   <h2>Fully Completed Features</h2>
 </div>
 
-| Feature Category &nbsp;&nbsp;| Details |
-|------------------|---------|
-| 🔐 Authentication | - Email/password signup & login<br>- Google OAuth login<br>- JWT-based session persistence<br>- Protected routes |
-| 🛍 Product System | - Product listing with image, price, and details<br>- Product variant structure (e.g., size, type)<br>- Product detail page with dynamic variant display<br>- Search bar with case-insensitive matching<br>- Pagination with `1 2 3 ...` UI |
-| 🛒 Cart System | - Backend-controlled cart tied to user<br>- Add to cart from product detail<br>- Increase/decrease quantity with stock validation<br>- Remove item from cart<br>- Total price and stock warnings<br>- Cart persistence per user session |
-| 💳 Checkout Page | - Shipping information input<br>- Order summary (item image, name, variant, quantity, total)<br>- Ready structure for payment integration |
-| 📸 UI & UX | - Responsive design<br>- Cloudinary integration for product images<br>- Error/success notifications to user<br>- Loading states handled<br>- Styled and organized layout using Tailwind |
-| 🧪 Backend | - PostgreSQL DB with proper schema: `users`, `products`, `product_variants`, `plant_details`, `carts`, `cart_items`<br>- Controllers and routes for all cart actions<br>- Secure user session handling with middleware<br>- Stock checks before cart operations |
+| Feature Category &nbsp;&nbsp; | Details                                                                                                                                                                                                                                                         |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔐 Authentication             | - Email/password signup & login<br>- Google OAuth login<br>- JWT-based session persistence<br>- Protected routes                                                                                                                                                |
+| 🛍 Product System              | - Product listing with image, price, and details<br>- Product variant structure (e.g., size, type)<br>- Product detail page with dynamic variant display<br>- Search bar with case-insensitive matching<br>- Pagination with `1 2 3 ...` UI                     |
+| 🛒 Cart System                | - Backend-controlled cart tied to user<br>- Add to cart from product detail<br>- Increase/decrease quantity with stock validation<br>- Remove item from cart<br>- Total price and stock warnings<br>- Cart persistence per user session                         |
+| 💳 Checkout Page              | - Shipping information input<br>- Order summary (item image, name, variant, quantity, total)<br>- Ready structure for payment integration                                                                                                                       |
+| 📸 UI & UX                    | - Responsive design<br>- Cloudinary integration for product images<br>- Error/success notifications to user<br>- Loading states handled<br>- Styled and organized layout using Tailwind                                                                         |
+| 🧪 Backend                    | - PostgreSQL DB with proper schema: `users`, `products`, `product_variants`, `plant_details`, `carts`, `cart_items`<br>- Controllers and routes for all cart actions<br>- Secure user session handling with middleware<br>- Stock checks before cart operations |
+
 ---
 
 ## 🚧 Remaining Features (To Do)
@@ -114,7 +113,7 @@ npm run dev
 ```bash
 cd frontend
 npm install
-npm start
+npm run dev
 ```
 
 ---
@@ -129,6 +128,12 @@ DATABASE_URL=postgres://<user>:<password>@localhost:5432/plant_store
 JWT_SECRET=your_jwt_secret
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
+```
+
+Create a `.env` file in `/frontend` directory:
+
+```env
+VITE_API_URL=
 ```
 
 ---

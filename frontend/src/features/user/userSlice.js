@@ -43,7 +43,7 @@ export const fetchUserProfile = createAsyncThunk(
   }
 );
 
-//user info update
+// user info update
 export const updateProfile = createAsyncThunk(
   "user/updateProfile",
   async (userData, thunkAPI) => {
@@ -57,7 +57,7 @@ export const updateProfile = createAsyncThunk(
   }
 );
 
-// Password change
+// password change
 export const changePassword = createAsyncThunk(
   "user/changePassword",
   async (passwordData, thunkAPI) => {
@@ -71,6 +71,7 @@ export const changePassword = createAsyncThunk(
   }
 );
 
+// user logout
 export const logoutUser = createAsyncThunk(
   "user/logout",
   async (_, thunkAPI) => {
@@ -84,27 +85,41 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
+const initialState = {
+  userInfo: null,
+
+  status: "idle", // register/login/logout general status
+  error: null,
+
+  profile: null,
+  profileStatus: "idle",
+  profileError: null,
+
+  updateStatus: "idle",
+  passwordStatus: "idle",
+};
+
 const userSlice = createSlice({
   name: "user",
-  initialState: {
-    userInfo: null,
-    status: "idle", // idle | loading | succeeded | failed
-    error: null,
-    profile: null,
-    profileStatus: "idle",
-    profileError: null,
-    updateStatus: "idle",
-    updateError: null,
-    passwordStatus: "idle",
-    passwordError: null,
-  },
+  initialState,
   reducers: {
     setUserInfo: (state, action) => {
       state.userInfo = action.payload;
     },
+    clearUser: (state) => {
+      state.userInfo = null;
+      state.profile = null;
+      state.status = "idle";
+      state.error = null;
+      state.profileStatus = "idle";
+      state.profileError = null;
+      state.updateStatus = "idle";
+      state.passwordStatus = "idle";
+    },
   },
   extraReducers: (builder) => {
     builder
+      // Register
       .addCase(registerUser.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -117,6 +132,8 @@ const userSlice = createSlice({
         state.status = "failed";
         state.error = action.payload;
       })
+
+      // Login
       .addCase(loginUser.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -129,6 +146,8 @@ const userSlice = createSlice({
         state.status = "failed";
         state.error = action.payload;
       })
+
+      // Fetch profile
       .addCase(fetchUserProfile.pending, (state) => {
         state.profileStatus = "loading";
         state.profileError = null;
@@ -136,45 +155,58 @@ const userSlice = createSlice({
       .addCase(fetchUserProfile.fulfilled, (state, action) => {
         state.profileStatus = "succeeded";
         state.profile = action.payload;
+        state.userInfo = action.payload;
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.profileStatus = "failed";
         state.profileError = action.payload;
-      }) // Profil güncelleme
+      })
+
+      // Update profile
       .addCase(updateProfile.pending, (state) => {
         state.updateStatus = "loading";
-        state.updateError = null;
       })
       .addCase(updateProfile.fulfilled, (state, action) => {
         state.updateStatus = "succeeded";
         state.userInfo = action.payload;
+        state.profile = action.payload;
       })
-      .addCase(updateProfile.rejected, (state, action) => {
+      .addCase(updateProfile.rejected, (state) => {
         state.updateStatus = "failed";
-        state.updateError = action.payload;
       })
-      // Parola değiştirme
+
+      // Change password
       .addCase(changePassword.pending, (state) => {
         state.passwordStatus = "loading";
-        state.passwordError = null;
       })
       .addCase(changePassword.fulfilled, (state) => {
         state.passwordStatus = "succeeded";
       })
-      .addCase(changePassword.rejected, (state, action) => {
+      .addCase(changePassword.rejected, (state) => {
         state.passwordStatus = "failed";
-        state.passwordError = action.payload;
+      })
+
+      // Logout
+      .addCase(logoutUser.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.userInfo = null;
         state.profile = null;
         state.status = "idle";
         state.error = null;
+        state.profileStatus = "idle";
+        state.profileError = null;
+        state.updateStatus = "idle";
+        state.passwordStatus = "idle";
       })
       .addCase(logoutUser.rejected, (state, action) => {
+        state.status = "failed";
         state.error = action.payload;
       });
   },
 });
-export const { logout, setUserInfo } = userSlice.actions;
+
+export const { setUserInfo, clearUser } = userSlice.actions;
 export default userSlice.reducer;

@@ -4,18 +4,23 @@ import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../features/user/userSlice";
 import UserInfo from "../components/UserInfo";
 import UserOrders from "../components/UserOrders";
+import toast from "react-hot-toast";
 
 const ProfilePage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState("orders"); // 'profile' | 'orders'
 
-  const handleLogout = () => {
-    dispatch(logoutUser())
-      .unwrap()
-      .then(() => {
-        navigate("/login");
-      });
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+
+      toast.success("Logged out successfully");
+
+      navigate("/login");
+    } catch (err) {
+      toast.error(err || "Logout failed");
+    }
   };
 
   return (

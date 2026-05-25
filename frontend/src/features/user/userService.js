@@ -37,11 +37,7 @@ const changePassword = async (passwordData) => {
   return res.data;
 };
 const logout = async () => {
-  const res = await axios.post(
-    `${API_URL}/logout`,
-    {},
-    { withCredentials: true }
-  );
+  const res = await axios.post(`${API_URL}/logout`, {}, axiosConfig);
   return res.data;
 };
 

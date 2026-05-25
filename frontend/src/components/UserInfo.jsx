@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateProfile, changePassword } from "../features/user/userSlice";
+import toast from "react-hot-toast";
 
 const UserInfo = () => {
   const dispatch = useDispatch();
-  const { userInfo, updateStatus, updateError, passwordStatus, passwordError } =
-    useSelector((state) => state.user);
+  const { userInfo, updateStatus, passwordStatus } = useSelector(
+    (state) => state.user
+  );
 
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -34,48 +36,54 @@ const UserInfo = () => {
     }
   }, [userInfo]);
 
-  useEffect(() => {
-    if (updateStatus === "succeeded") {
-      alert("Profile updated successfully");
-      setShowProfileModal(false);
-    }
-  }, [updateStatus]);
-
-  useEffect(() => {
-    if (passwordStatus === "succeeded") {
-      alert("Password changed successfully");
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmNewPassword: "",
-      });
-      setShowPasswordModal(false);
-    }
-  }, [passwordStatus]);
-
   const onProfileChange = (e) =>
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
 
   const onPasswordChange = (e) =>
     setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
 
-  const handleProfileSubmit = (e) => {
+  const handleProfileSubmit = async (e) => {
     e.preventDefault();
-    dispatch(updateProfile(profileData));
+
+    try {
+      await dispatch(updateProfile(profileData)).unwrap();
+
+      toast.success("Profile updated successfully");
+
+      setShowProfileModal(false);
+    } catch (err) {
+      toast.error(err || "Failed to update profile");
+    }
   };
 
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
+
     if (passwordData.newPassword !== passwordData.confirmNewPassword) {
-      alert("New passwords do not match");
+      toast.error("New passwords do not match");
       return;
     }
-    dispatch(
-      changePassword({
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword,
-      })
-    );
+
+    try {
+      await dispatch(
+        changePassword({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+        })
+      ).unwrap();
+
+      toast.success("Password changed successfully");
+
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmNewPassword: "",
+      });
+
+      setShowPasswordModal(false);
+    } catch (err) {
+      toast.error(err || "Failed to change password");
+    }
   };
 
   if (!userInfo) return <p>Please log in to view your profile.</p>;
@@ -182,10 +190,6 @@ const UserInfo = () => {
                 </label>
               </div>
 
-              {updateError && (
-                <p className="text-red-600 mt-4">{updateError}</p>
-              )}
-
               <div className="flex justify-end gap-4 mt-6">
                 <button
                   type="button"
@@ -255,10 +259,6 @@ const UserInfo = () => {
                   className="w-full border p-2 rounded focus:ring-green-800"
                 />
               </label>
-
-              {passwordError && (
-                <p className="text-red-600 mb-4">{passwordError}</p>
-              )}
 
               <div className="flex justify-end gap-2">
                 <button

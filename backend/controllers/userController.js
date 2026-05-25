@@ -63,13 +63,13 @@ const loginUser = asyncHandler(async (req, res) => {
 
   if (!user) {
     res.status(401);
-    throw new Error("Invalid email");
+    throw new Error("Incorrect email or password");
   }
 
   const isMatch = await bcrypt.compare(password, user.password_hash);
   if (!isMatch) {
     res.status(401);
-    throw new Error("Invalid email or password");
+    throw new Error("Incorrect email or password");
   }
 
   const token = jwt.sign(

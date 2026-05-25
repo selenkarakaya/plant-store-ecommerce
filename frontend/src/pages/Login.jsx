@@ -10,7 +10,7 @@ const Login = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { userInfo, status, error } = useSelector((state) => state.user);
+  const { userInfo, status } = useSelector((state) => state.user);
 
   useEffect(() => {
     if (userInfo) {

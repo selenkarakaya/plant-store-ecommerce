@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { registerUser } from "../features/user/userSlice";
 import { useNavigate, Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 function Register() {
   const dispatch = useDispatch();
@@ -19,17 +20,25 @@ function Register() {
   const onChange = (e) =>
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
+
     if (password !== confirmPassword) {
-      alert("Passwords do not match");
+      toast.error("Passwords do not match");
       return;
     }
 
-    dispatch(registerUser({ name, email, password }));
-  };
+    try {
+      await dispatch(registerUser({ name, email, password })).unwrap();
 
-  const { userInfo, status, error } = useSelector((state) => state.user);
+      toast.success("Account created successfully");
+
+      navigate("/");
+    } catch (err) {
+      toast.error(err || "Registration failed");
+    }
+  };
+  const { userInfo, status } = useSelector((state) => state.user);
 
   useEffect(() => {
     if (userInfo) {
@@ -42,12 +51,6 @@ function Register() {
       <header>
         <h1 className="text-2xl font-bold mb-6 text-center">Register</h1>
       </header>
-
-      {error && (
-        <p className="text-red-600 mb-4" role="alert">
-          {error}
-        </p>
-      )}
 
       <form onSubmit={onSubmit} aria-label="Register Form">
         <div className="mb-4">
