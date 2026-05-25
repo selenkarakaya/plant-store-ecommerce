@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { checkout, resetCheckoutStatus } from "../features/orders/orderSlice";
-import { getCart } from "../features/carts/cartSlice";
+import { clearCart, getCart } from "../features/carts/cartSlice";
 import toast from "react-hot-toast";
 
 const CheckoutPage = () => {
@@ -65,6 +65,7 @@ const CheckoutPage = () => {
   };
   useEffect(() => {
     if (checkoutStatus === "succeeded") {
+      dispatch(clearCart());
       toast.success("Order placed successfully! Thank you.");
       setTimeout(() => {
         navigate("/me");
@@ -72,7 +73,7 @@ const CheckoutPage = () => {
     } else if (checkoutStatus === "failed" && checkoutError) {
       toast.error(`Order failed: ${checkoutError}`);
     }
-  }, [checkoutStatus, checkoutError, navigate]);
+  }, [checkoutStatus, checkoutError, dispatch, navigate]);
 
   return (
     <div className="container mx-auto px-4 py-8 flex flex-col justify-around lg:flex-row gap-8">
