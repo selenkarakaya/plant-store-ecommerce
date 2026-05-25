@@ -49,19 +49,28 @@ export const removeItemFromCart = createAsyncThunk(
   }
 );
 
+const initialState = {
+  cart: null,
+  cart_items: [],
+  shippingMethod: "standard",
+  status: "idle",
+  error: null,
+};
+
 // Slice
 const cartSlice = createSlice({
   name: "cart",
-  initialState: {
-    cart: null,
-    cart_items: [],
-    shippingMethod: "standard",
-    status: "idle",
-    error: null,
-  },
+  initialState,
   reducers: {
     setShippingMethod: (state, action) => {
       state.shippingMethod = action.payload;
+    },
+    clearCart: (state) => {
+      state.cart = null;
+      state.cart_items = [];
+      state.shippingMethod = "standard";
+      state.status = "idle";
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -95,6 +104,8 @@ const cartSlice = createSlice({
         state.cart_items = action.payload.cart_items;
       })
       .addCase(getCart.rejected, (state, action) => {
+        state.cart = null;
+        state.cart_items = [];
         state.status = "failed";
         state.error = action.payload;
       })
@@ -141,5 +152,5 @@ const cartSlice = createSlice({
   },
 });
 
-export const { setShippingMethod } = cartSlice.actions;
+export const { setShippingMethod, clearCart } = cartSlice.actions;
 export default cartSlice.reducer;
