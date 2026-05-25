@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../features/user/userSlice";
 import { useNavigate, Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -20,9 +21,18 @@ const Login = () => {
   const onChange = (e) =>
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    dispatch(loginUser({ email, password }));
+
+    try {
+      await dispatch(loginUser({ email, password })).unwrap();
+
+      toast.success("Login successful");
+
+      navigate("/");
+    } catch (err) {
+      toast.error(err || "Invalid email or password");
+    }
   };
 
   return (
@@ -79,7 +89,7 @@ const Login = () => {
             value={password}
             onChange={onChange}
             required
-            className="w-full border p-2 rounded"
+            className="w-full border p-2 rounded-lg"
           />
         </div>
 
