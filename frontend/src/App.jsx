@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserProfile, setUserInfo } from "./features/user/userSlice";
+import { clearCart, getCart } from "./features/carts/cartSlice";
 import { Toaster } from "react-hot-toast";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -32,6 +33,14 @@ function App() {
 
     if (!userInfo) {
       checkAuth();
+    }
+  }, [dispatch, userInfo]);
+
+  useEffect(() => {
+    if (userInfo) {
+      dispatch(getCart());
+    } else {
+      dispatch(clearCart());
     }
   }, [dispatch, userInfo]);
 
