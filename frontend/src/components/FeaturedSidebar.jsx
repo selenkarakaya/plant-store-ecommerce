@@ -31,16 +31,18 @@ function FeaturedSidebar() {
         className="bg-[url('https://res.cloudinary.com/de4kodlhk/image/upload/v1752694815/Green_Minimalist_House_Plant_Store_Facebook_Cover_zwbon2.png')] bg-cover bg-center h-64 sm:h-[36rem] rounded-lg shadow-lg relative"
         aria-label="Houseplants & Indoor Plants delivery banner"
       >
-        <div className="absolute inset-0 w-full sm:w-1/2 px-6 sm:px-10 flex flex-col items-center sm:items-start justify-center gap-y-4 text-primary text-center sm:text-left">
-          <h1 className="text-xl sm:text-2xl font-bold">
+        <div className="absolute inset-0 w-3/5 sm:w-1/3 md:w-1/4 px-4 sm:px-10 flex flex-col items-start justify-center gap-y-3 text-primary text-left">
+          <h1 className="text-xs sm:text-lg md:text-xl font-bold">
             Houseplants & Indoor Plants Delivered
           </h1>
-          <p className="font-semibold max-w-md">
+
+          <p className="text-xs sm:text-base md:text-lg font-semibold">
             We are the UK Houseplant & Indoor Plant specialists. Huge range of
             Houseplants & Indoor Plants on sale with fast delivery.
           </p>
+
           <button
-            className="bg-green-700 text-white px-6 py-2 rounded hover:bg-green-800 transition"
+            className="bg-green-700 text-white px-4 sm:px-6 py-2 rounded hover:bg-green-800 transition text-xs sm:text-base"
             aria-label="Shop Houseplants On Sale"
           >
             Houseplants On Sale
