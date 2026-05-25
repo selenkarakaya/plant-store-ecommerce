@@ -9,93 +9,129 @@ const checkoutOrder = asyncHandler(async (req, res) => {
     payment_method = "mock_card",
   } = req.body;
 
-  // Get active cart
-  const cartRes = await db.query(
-    `SELECT * FROM carts WHERE user_id = $1 AND status = 'active'`,
-    [userId]
-  );
-  const cart = cartRes.rows[0];
+  const client = await db.pool.connect();
 
-  if (!cart) {
-    res.status(400);
-    throw new Error("No active cart found");
-  }
+  try {
+    await client.query("BEGIN");
 
-  // Get cart contents
-  const itemsRes = await db.query(
-    `SELECT * FROM cart_items WHERE cart_id = $1`,
-    [cart.id]
-  );
-  const cartItems = itemsRes.rows;
+    // Get active cart
+    const cartRes = await client.query(
+      `SELECT * FROM carts WHERE user_id = $1 AND status = 'active' FOR UPDATE`,
+      [userId]
+    );
+    const cart = cartRes.rows[0];
 
-  if (cartItems.length === 0) {
-    res.status(400);
-    throw new Error("Your cart is empty");
-  }
+    if (!cart) {
+      res.status(400);
+      throw new Error("No active cart found");
+    }
 
-  // Mock payment → successful
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + parseFloat(item.total_price),
-    0
-  );
-  let shippingFee = 0;
-  if (shipping_method === "express") {
-    shippingFee = subtotal >= 60 ? 5.99 : 7.99;
-  } else if (shipping_method === "standard") {
-    shippingFee = subtotal >= 60 ? 0 : 5.99;
-  } else {
-    res.status(400);
-    throw new Error("Invalid shipping method");
-  }
+    // Get cart contents with locked stock rows so stock cannot be oversold.
+    const itemsRes = await client.query(
+      `SELECT
+        ci.*,
+        pv.stock,
+        pv.variant_name
+      FROM cart_items ci
+      JOIN product_variants pv ON ci.product_variant_id = pv.id
+      WHERE ci.cart_id = $1
+      FOR UPDATE OF pv`,
+      [cart.id]
+    );
+    const cartItems = itemsRes.rows;
 
-  const discount = cart.discount_amount || 0;
-  const totalAmount = subtotal + shippingFee - discount;
+    if (cartItems.length === 0) {
+      res.status(400);
+      throw new Error("Your cart is empty");
+    }
 
-  // Create the order
-  const orderRes = await db.query(
-    `INSERT INTO orders 
+    for (const item of cartItems) {
+      if (item.quantity > item.stock) {
+        res.status(400);
+        throw new Error(
+          `Only ${item.stock} items in stock for ${item.variant_name}`
+        );
+      }
+    }
+
+    // Mock payment -> successful
+    const subtotal = cartItems.reduce(
+      (sum, item) => sum + parseFloat(item.total_price),
+      0
+    );
+    let shippingFee = 0;
+    if (shipping_method === "express") {
+      shippingFee = subtotal >= 60 ? 5.99 : 7.99;
+    } else if (shipping_method === "standard") {
+      shippingFee = subtotal >= 60 ? 0 : 5.99;
+    } else {
+      res.status(400);
+      throw new Error("Invalid shipping method");
+    }
+
+    const discount = cart.discount_amount || 0;
+    const totalAmount = subtotal + shippingFee - discount;
+
+    // Create the order
+    const orderRes = await client.query(
+      `INSERT INTO orders
        (user_id, status, shipping_method, shipping_fee, coupon_code, discount_amount, total_amount, shipping_address, payment_method, created_at, updated_at)
        VALUES ($1, 'paid', $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
        RETURNING *`,
-    [
-      userId,
-      shipping_method,
-      shippingFee,
-      cart.coupon_code,
-      discount,
-      totalAmount,
-      shipping_address,
-      payment_method,
-    ]
-  );
-  const order = orderRes.rows[0];
-
-  // Save order items
-  for (const item of cartItems) {
-    await db.query(
-      `INSERT INTO order_items 
-        (order_id, product_variant_id, quantity, unit_price, total_price)
-        VALUES ($1, $2, $3, $4, $5)`,
       [
-        order.id,
-        item.product_variant_id,
-        item.quantity,
-        item.unit_price,
-        item.total_price,
+        userId,
+        shipping_method,
+        shippingFee,
+        cart.coupon_code,
+        discount,
+        totalAmount,
+        shipping_address,
+        payment_method,
       ]
     );
+    const order = orderRes.rows[0];
+
+    // Save order items and decrease stock
+    for (const item of cartItems) {
+      await client.query(
+        `INSERT INTO order_items
+        (order_id, product_variant_id, quantity, unit_price, total_price)
+        VALUES ($1, $2, $3, $4, $5)`,
+        [
+          order.id,
+          item.product_variant_id,
+          item.quantity,
+          item.unit_price,
+          item.total_price,
+        ]
+      );
+
+      await client.query(
+        `UPDATE product_variants
+         SET stock = stock - $1
+         WHERE id = $2`,
+        [item.quantity, item.product_variant_id]
+      );
+    }
+
+    // Close the cart
+    await client.query(
+      `UPDATE carts SET status = 'completed', updated_at = NOW() WHERE id = $1`,
+      [cart.id]
+    );
+
+    await client.query("COMMIT");
+
+    res.status(201).json({
+      message: "Payment successful, order placed",
+      order_id: order.id,
+    });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
   }
-
-  // Close the cart
-  await db.query(
-    `UPDATE carts SET status = 'completed', updated_at = NOW() WHERE id = $1`,
-    [cart.id]
-  );
-
-  res.status(201).json({
-    message: "Payment successful, order placed",
-    order_id: order.id,
-  });
 });
 
 const getMyOrders = asyncHandler(async (req, res) => {
@@ -129,10 +165,10 @@ const getOrderDetails = asyncHandler(async (req, res) => {
     throw new Error("You are not authorized to view this order");
   }
 
-  // order\_items + product details
+  // order_items + product details
   const itemsRes = await db.query(
     `
-      SELECT 
+      SELECT
         oi.id AS order_item_id,
         oi.quantity,
         oi.unit_price,
@@ -167,23 +203,3 @@ const getAllOrders = asyncHandler(async (req, res) => {
 });
 
 module.exports = { checkoutOrder, getMyOrders, getOrderDetails, getAllOrders };
-
-/*
-✅ Results:
-
-- Order is created from the active cart after verifying the cart and its items.
-- Products in the order are saved as order_items with detailed variant and pricing info.
-- The cart status is updated to 'completed' (closed).
-- The user receives the newly created order_id upon successful checkout.
-- Users can retrieve their order history sorted by most recent orders.
-- Users can get detailed order information including related order_items and product details.
-- Access control ensures users can only view their own orders.
-
----
-
-Next steps:
-
-- Admin order management (e.g., update order status: shipped, delivered, etc.)
-- Frontend implementation for detailed order pages combining order and item data.
-- Implement real payment integration instead of mock payment.
-*/
