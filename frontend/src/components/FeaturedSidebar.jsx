@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import {
+  setSelectedCategoryId,
+  fetchProductsByCategory,
+} from "../features/products/productSlice";
 const bgImagesPairs = [
   [
     "https://res.cloudinary.com/de4kodlhk/image/upload/v1752694880/Green_Natural_Home_Plants_Photo_Collage_emznyf.png",
@@ -25,6 +30,15 @@ function FeaturedSidebar() {
     return () => clearInterval(interval);
   }, []);
 
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleClick = (categoryId) => {
+    dispatch(setSelectedCategoryId(categoryId));
+    dispatch(fetchProductsByCategory(categoryId));
+    navigate(`/category/${categoryId}`);
+  };
+
   return (
     <>
       <section
@@ -43,9 +57,10 @@ function FeaturedSidebar() {
 
           <button
             className="bg-green-700 text-white px-4 sm:px-6 py-2 rounded hover:bg-green-800 transition text-xs sm:text-base"
-            aria-label="Shop Houseplants On Sale"
+            aria-label="Shop Houseplants"
+            onClick={() => handleClick(6)}
           >
-            Houseplants On Sale
+            All Houseplants
           </button>
         </div>
       </section>

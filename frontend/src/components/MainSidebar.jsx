@@ -47,9 +47,9 @@ function MainSidebar() {
             </button>
             <button
               className="bg-orange w-full sm:w-3/4 md:w-1/2 py-2 rounded text-white hover:opacity-90 transition"
-              onClick={() => handleClick(8)}
+              onClick={() => handleClick(9)}
             >
-              Indoor Plants on Sale
+              Perfect Plants for Under £30
             </button>
           </nav>
         </article>
