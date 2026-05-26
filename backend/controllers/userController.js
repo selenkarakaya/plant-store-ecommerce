@@ -80,9 +80,9 @@ const loginUser = asyncHandler(async (req, res) => {
 
   res.cookie("token", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // true in prod, false in local
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: 1000 * 60 * 60 * 24, // 1 gün
+    secure: true,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24,
   });
 
   res.json({
