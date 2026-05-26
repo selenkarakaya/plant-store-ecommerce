@@ -18,6 +18,7 @@ const ProductDetailPage = () => {
   const { selectedProduct, status, error } = useSelector(
     (state) => state.products
   );
+  const { userInfo } = useSelector((state) => state.user);
 
   useEffect(() => {
     if (id) {
@@ -33,6 +34,30 @@ const ProductDetailPage = () => {
   );
 
   const selectedDetails = selectedProduct?.plant_details;
+
+  const handleAddToCart = async () => {
+    if (!selectedVariantId) {
+      toast.error("Please select a variant first");
+      return;
+    }
+
+    if (!userInfo) {
+      toast.error("Please sign in to add products to your cart");
+      return;
+    }
+
+    try {
+      await dispatch(
+        addToCart({
+          product_variant_id: selectedVariantId,
+          quantity: 1,
+        })
+      ).unwrap();
+      toast.success("Product added to cart!");
+    } catch (err) {
+      toast.error(err || "Could not add product to cart");
+    }
+  };
 
   if (status === "loading") return <LoadingSpinner />;
   if (error) return <p className="text-red-600">Error: {error}</p>;
@@ -190,19 +215,7 @@ const ProductDetailPage = () => {
             </p>
           )}
           <button
-            onClick={() => {
-              if (selectedVariantId) {
-                dispatch(
-                  addToCart({
-                    product_variant_id: selectedVariantId,
-                    quantity: 1,
-                  })
-                );
-                toast.success("Product added to cart!");
-              } else {
-                toast.error("Please select a variant first");
-              }
-            }}
+            onClick={handleAddToCart}
             title={"Select a variant first"}
             disabled={!selectedVariantId}
             aria-disabled={!selectedVariantId}
