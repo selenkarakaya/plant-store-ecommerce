@@ -4,6 +4,9 @@ import { loginUser } from "../features/user/userSlice";
 import { useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "");
+const GOOGLE_AUTH_URL = `${API_BASE_URL}/auth/google`;
+
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const { email, password } = formData;
@@ -44,7 +47,7 @@ const Login = () => {
         <h1 className="text-2xl text-center font-bold mb-6">Sign in</h1>
       </header>
       <section className="mb-4">
-        <a href="http://localhost:5500/auth/google">
+        <a href={GOOGLE_AUTH_URL}>
           <button
             type="button"
             className="w-full bg-brown text-white px-4 py-2 rounded-lg"
