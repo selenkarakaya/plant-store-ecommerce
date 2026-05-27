@@ -10,7 +10,9 @@ const minAddressLength = 10;
 
 const isValidPhone = (phone) => {
   const digitsOnly = phone.replace(/\D/g, "");
-  return phoneRegex.test(phone) && digitsOnly.length >= 7 && digitsOnly.length <= 15;
+  return (
+    phoneRegex.test(phone) && digitsOnly.length >= 7 && digitsOnly.length <= 15
+  );
 };
 
 const CheckoutPage = () => {
@@ -80,7 +82,7 @@ const CheckoutPage = () => {
       toast.success("Order placed successfully! Thank you.");
       setTimeout(() => {
         navigate("/me");
-      }, 1000); // 2 saniye sonra yönlendir
+      }, 1000);
     } else if (checkoutStatus === "failed" && checkoutError) {
       toast.error(`Order failed: ${checkoutError}`);
     }
