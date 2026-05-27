@@ -1,6 +1,8 @@
 const asyncHandler = require("express-async-handler");
 const db = require("../db");
 
+const minAddressLength = 10;
+
 const checkoutOrder = asyncHandler(async (req, res) => {
   const userId = req.user.id;
   const {
@@ -8,6 +10,17 @@ const checkoutOrder = asyncHandler(async (req, res) => {
     shipping_method = "standard",
     payment_method = "mock_card",
   } = req.body;
+  const trimmedShippingAddress = shipping_address?.trim();
+
+  if (!trimmedShippingAddress) {
+    res.status(400);
+    throw new Error("Shipping address is required");
+  }
+
+  if (trimmedShippingAddress.length < minAddressLength) {
+    res.status(400);
+    throw new Error("Shipping address must be at least 10 characters.");
+  }
 
   const client = await db.pool.connect();
 
@@ -85,7 +98,7 @@ const checkoutOrder = asyncHandler(async (req, res) => {
         cart.coupon_code,
         discount,
         totalAmount,
-        shipping_address,
+        trimmedShippingAddress,
         payment_method,
       ]
     );
