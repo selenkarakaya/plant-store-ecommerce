@@ -66,6 +66,7 @@ const CheckoutPage = () => {
 
     const orderData = {
       shipping_address: address.trim(),
+      phone: phone.trim(),
       shipping_method: shippingMethod,
       payment_method: paymentMethod,
       coupon_code: couponCode.trim() || null,
