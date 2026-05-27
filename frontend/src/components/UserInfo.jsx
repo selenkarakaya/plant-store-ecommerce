@@ -3,6 +3,17 @@ import { useDispatch, useSelector } from "react-redux";
 import { updateProfile, changePassword } from "../features/user/userSlice";
 import toast from "react-hot-toast";
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+const phoneRegex = /^\+?[0-9\s()-]{7,20}$/;
+const minAddressLength = 10;
+
+const isValidPhone = (phone) => {
+  if (!phone) return true;
+  const digitsOnly = phone.replace(/\D/g, "");
+  return phoneRegex.test(phone) && digitsOnly.length >= 7 && digitsOnly.length <= 15;
+};
+
 const UserInfo = () => {
   const dispatch = useDispatch();
   const { userInfo, updateStatus, passwordStatus } = useSelector(
@@ -45,8 +56,34 @@ const UserInfo = () => {
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
 
+    if (!emailRegex.test(profileData.email.trim())) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    if (!isValidPhone(profileData.phone.trim())) {
+      toast.error("Please enter a valid phone number");
+      return;
+    }
+
+    if (
+      profileData.address.trim() &&
+      profileData.address.trim().length < minAddressLength
+    ) {
+      toast.error("Address must be at least 10 characters");
+      return;
+    }
+
     try {
-      await dispatch(updateProfile(profileData)).unwrap();
+      await dispatch(
+        updateProfile({
+          ...profileData,
+          name: profileData.name.trim(),
+          email: profileData.email.trim(),
+          phone: profileData.phone.trim(),
+          address: profileData.address.trim(),
+        })
+      ).unwrap();
 
       toast.success("Profile updated successfully");
 
@@ -58,6 +95,13 @@ const UserInfo = () => {
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
+
+    if (!passwordRegex.test(passwordData.newPassword)) {
+      toast.error(
+        "Password must be at least 8 characters and include one uppercase letter and one number"
+      );
+      return;
+    }
 
     if (passwordData.newPassword !== passwordData.confirmNewPassword) {
       toast.error("New passwords do not match");
@@ -170,12 +214,15 @@ const UserInfo = () => {
                 <label className="block text-sm font-medium">
                   Phone
                   <input
-                    type="text"
+                    type="tel"
                     name="phone"
                     value={profileData.phone}
                     onChange={onProfileChange}
                     className="mt-1 w-full border p-2 rounded focus:ring-green-800"
                   />
+                  <span className="mt-1 block text-xs text-gray-500">
+                    Use 7 to 15 digits. Spaces, brackets and + are allowed.
+                  </span>
                 </label>
 
                 <label className="block text-sm font-medium">
@@ -185,8 +232,12 @@ const UserInfo = () => {
                     name="address"
                     value={profileData.address}
                     onChange={onProfileChange}
+                    minLength={minAddressLength}
                     className="mt-1 w-full border p-2 rounded focus:ring-green-800"
                   />
+                  <span className="mt-1 block text-xs text-gray-500">
+                    Must be at least 10 characters when provided.
+                  </span>
                 </label>
               </div>
 
@@ -244,8 +295,12 @@ const UserInfo = () => {
                   value={passwordData.newPassword}
                   onChange={onPasswordChange}
                   required
+                  minLength={8}
                   className="w-full border p-2 rounded focus:ring-green-800"
                 />
+                <span className="mt-1 block text-xs text-gray-500">
+                  Must be at least 8 characters and include one uppercase letter and one number.
+                </span>
               </label>
 
               <label className="block mb-4">
