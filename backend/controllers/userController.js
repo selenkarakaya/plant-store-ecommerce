@@ -1,63 +1,104 @@
-// Import bcrypt for hashing passwords
-// Import database client (db) for PostgreSQL queries
-// Import express-async-handler to catch async errors automatically
 const bcrypt = require("bcrypt");
 const db = require("../db");
 const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
 
-// registerUser handles user registration
-const registerUser = asyncHandler(async (req, res) => {
-  // Destructure user input from request body
-  const { name, email, password, phone, address } = req.body;
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+const phoneRegex = /^\+?[0-9\s()-]{7,20}$/;
+const minAddressLength = 10;
 
-  // Validate required fields
-  if (!name || !email || !password) {
+const isValidPhone = (phone) => {
+  if (!phone) return true;
+  const digitsOnly = phone.replace(/\D/g, "");
+  return phoneRegex.test(phone) && digitsOnly.length >= 7 && digitsOnly.length <= 15;
+};
+
+const validateEmail = (email) => emailRegex.test(email);
+const validatePassword = (password) => passwordRegex.test(password);
+const validateAddress = (address) =>
+  !address || address.trim().length >= minAddressLength;
+
+const registerUser = asyncHandler(async (req, res) => {
+  const { name, email, password, phone, address } = req.body;
+  const trimmedName = name?.trim();
+  const trimmedEmail = email?.trim().toLowerCase();
+  const trimmedPhone = phone?.trim();
+  const trimmedAddress = address?.trim();
+
+  if (!trimmedName || !trimmedEmail || !password) {
     res.status(400);
     throw new Error("Name, email and password are required.");
   }
 
-  // Check if the email is already registered in the database
+  if (!validateEmail(trimmedEmail)) {
+    res.status(400);
+    throw new Error("Please enter a valid email address.");
+  }
+
+  if (!validatePassword(password)) {
+    res.status(400);
+    throw new Error(
+      "Password must be at least 8 characters and include one uppercase letter and one number."
+    );
+  }
+
+  if (!isValidPhone(trimmedPhone)) {
+    res.status(400);
+    throw new Error("Please enter a valid phone number.");
+  }
+
+  if (!validateAddress(trimmedAddress)) {
+    res.status(400);
+    throw new Error("Address must be at least 10 characters.");
+  }
+
   const { rows } = await db.query("SELECT id FROM users WHERE email = $1", [
-    email,
+    trimmedEmail,
   ]);
   if (rows.length > 0) {
     res.status(409);
     throw new Error("Email already registered");
   }
 
-  // Hash the password using bcrypt
   const saltRounds = 10;
   const password_hash = await bcrypt.hash(password, saltRounds);
 
-  // Prepare SQL query to insert new user data
   const query = `
     INSERT INTO users (name, email, password_hash, phone, address, created_at, updated_at)
     VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
     RETURNING id, name, email, phone, address, created_at, updated_at
   `;
 
-  // Insert user data, setting phone and address to null if missing
-  const userData = [name, email, password_hash, phone || null, address || null];
+  const userData = [
+    trimmedName,
+    trimmedEmail,
+    password_hash,
+    trimmedPhone || null,
+    trimmedAddress || null,
+  ];
 
-  // Execute the query and get the inserted user data
   const result = await db.query(query, userData);
 
-  // Return the created user object with status 201 (Created)
   res.status(201).json({ user: result.rows[0] });
 });
 
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
+  const trimmedEmail = email?.trim().toLowerCase();
 
-  if (!email || !password) {
+  if (!trimmedEmail || !password) {
     res.status(400);
     throw new Error("Email and password are required");
   }
 
-  // find the user
+  if (!validateEmail(trimmedEmail)) {
+    res.status(400);
+    throw new Error("Please enter a valid email address.");
+  }
+
   const { rows } = await db.query("SELECT * FROM users WHERE email = $1", [
-    email,
+    trimmedEmail,
   ]);
   const user = rows[0];
 
@@ -103,19 +144,19 @@ const getUserProfile = asyncHandler(async (req, res) => {
   const { rows } = await db.query("SELECT * FROM users WHERE id = $1", [id]);
 
   if (!rows[0]) {
-    res.status(400);
-  }
-  if (!rows[0]) {
     res.status(404);
     throw new Error("User not found");
   }
   res.json(rows[0]);
 });
 
-// ✅ Profile update (name, email, etc.)
 const updateUserProfile = asyncHandler(async (req, res) => {
   const { id } = req.user;
   const { name, email, phone, address } = req.body;
+  const trimmedName = name?.trim();
+  const trimmedEmail = email?.trim().toLowerCase();
+  const trimmedPhone = phone?.trim();
+  const trimmedAddress = address?.trim();
 
   const { rows } = await db.query("SELECT * FROM users WHERE id = $1", [id]);
   const user = rows[0];
@@ -123,6 +164,33 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   if (!user) {
     res.status(404);
     throw new Error("User not found");
+  }
+
+  if (trimmedEmail && !validateEmail(trimmedEmail)) {
+    res.status(400);
+    throw new Error("Please enter a valid email address.");
+  }
+
+  if (!isValidPhone(trimmedPhone)) {
+    res.status(400);
+    throw new Error("Please enter a valid phone number.");
+  }
+
+  if (!validateAddress(trimmedAddress)) {
+    res.status(400);
+    throw new Error("Address must be at least 10 characters.");
+  }
+
+  if (trimmedEmail && trimmedEmail !== user.email) {
+    const existingUser = await db.query(
+      "SELECT id FROM users WHERE email = $1 AND id <> $2",
+      [trimmedEmail, id]
+    );
+
+    if (existingUser.rows.length > 0) {
+      res.status(409);
+      throw new Error("Email already registered");
+    }
   }
 
   const updated = await db.query(
@@ -133,16 +201,17 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     RETURNING id, name, email, phone, address, updated_at
   `,
     [
-      name || user.name,
-      email || user.email,
-      phone || user.phone,
-      address || user.address,
+      trimmedName || user.name,
+      trimmedEmail || user.email,
+      trimmedPhone || user.phone,
+      trimmedAddress || user.address,
       id,
     ]
   );
 
   res.json(updated.rows[0]);
 });
+
 const changeUserPassword = asyncHandler(async (req, res) => {
   const { id } = req.user;
   const { currentPassword, newPassword } = req.body;
@@ -150,6 +219,13 @@ const changeUserPassword = asyncHandler(async (req, res) => {
   if (!newPassword || !currentPassword) {
     res.status(400);
     throw new Error("Both current and new password are required");
+  }
+
+  if (!validatePassword(newPassword)) {
+    res.status(400);
+    throw new Error(
+      "Password must be at least 8 characters and include one uppercase letter and one number."
+    );
   }
 
   const { rows } = await db.query("SELECT * FROM users WHERE id = $1", [id]);
@@ -179,6 +255,7 @@ const changeUserPassword = asyncHandler(async (req, res) => {
 
   res.json({ message: "Password updated successfully" });
 });
+
 const logoutUser = (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
@@ -189,7 +266,6 @@ const logoutUser = (req, res) => {
   res.json({ message: "Logged out successfully" });
 };
 
-// Export the registerUser function so it can be used in other files
 module.exports = {
   registerUser,
   loginUser,
