@@ -1,16 +1,25 @@
 const asyncHandler = require("express-async-handler");
 const db = require("../db");
 
+const phoneRegex = /^\+?[0-9\s()-]{7,20}$/;
 const minAddressLength = 10;
+
+const isValidPhone = (phone) => {
+  if (!phone) return false;
+  const digitsOnly = phone.replace(/\D/g, "");
+  return phoneRegex.test(phone) && digitsOnly.length >= 7 && digitsOnly.length <= 15;
+};
 
 const checkoutOrder = asyncHandler(async (req, res) => {
   const userId = req.user.id;
   const {
     shipping_address,
+    phone,
     shipping_method = "standard",
     payment_method = "mock_card",
   } = req.body;
   const trimmedShippingAddress = shipping_address?.trim();
+  const trimmedPhone = phone?.trim();
 
   if (!trimmedShippingAddress) {
     res.status(400);
@@ -20,6 +29,11 @@ const checkoutOrder = asyncHandler(async (req, res) => {
   if (trimmedShippingAddress.length < minAddressLength) {
     res.status(400);
     throw new Error("Shipping address must be at least 10 characters.");
+  }
+
+  if (!isValidPhone(trimmedPhone)) {
+    res.status(400);
+    throw new Error("Please enter a valid phone number.");
   }
 
   const client = await db.pool.connect();
