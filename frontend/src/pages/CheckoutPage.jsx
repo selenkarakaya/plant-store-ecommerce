@@ -5,6 +5,14 @@ import { checkout, resetCheckoutStatus } from "../features/orders/orderSlice";
 import { clearCart, getCart } from "../features/carts/cartSlice";
 import toast from "react-hot-toast";
 
+const phoneRegex = /^\+?[0-9\s()-]{7,20}$/;
+const minAddressLength = 10;
+
+const isValidPhone = (phone) => {
+  const digitsOnly = phone.replace(/\D/g, "");
+  return phoneRegex.test(phone) && digitsOnly.length >= 7 && digitsOnly.length <= 15;
+};
+
 const CheckoutPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -45,17 +53,19 @@ const CheckoutPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!address.trim()) {
-      alert("Please enter your shipping address");
+
+    if (address.trim().length < minAddressLength) {
+      toast.error("Shipping address must be at least 10 characters");
       return;
     }
-    if (!phone.trim()) {
-      alert("Please enter your phone number");
+
+    if (!isValidPhone(phone.trim())) {
+      toast.error("Please enter a valid phone number");
       return;
     }
 
     const orderData = {
-      shipping_address: address,
+      shipping_address: address.trim(),
       shipping_method: shippingMethod,
       payment_method: paymentMethod,
       coupon_code: couponCode.trim() || null,
@@ -97,9 +107,13 @@ const CheckoutPage = () => {
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             rows={3}
+            minLength={minAddressLength}
             className="w-full border rounded px-3 py-2"
             required
           />
+          <p className="mt-1 text-xs text-gray-500">
+            Must be at least 10 characters.
+          </p>
         </div>
 
         <div>
@@ -111,6 +125,9 @@ const CheckoutPage = () => {
             className="w-full border rounded px-3 py-2"
             required
           />
+          <p className="mt-1 text-xs text-gray-500">
+            Use 7 to 15 digits. Spaces, brackets and + are allowed.
+          </p>
         </div>
 
         <div>
