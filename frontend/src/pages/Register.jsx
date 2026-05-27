@@ -4,6 +4,9 @@ import { registerUser } from "../features/user/userSlice";
 import { useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+
 function Register() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -16,12 +19,26 @@ function Register() {
   });
 
   const { name, email, password, confirmPassword } = formData;
+  const isPasswordValid = passwordRegex.test(password);
+  const isEmailValid = emailRegex.test(email);
 
   const onChange = (e) =>
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const onSubmit = async (e) => {
     e.preventDefault();
+
+    if (!isEmailValid) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    if (!isPasswordValid) {
+      toast.error(
+        "Password must be at least 8 characters and include one uppercase letter and one number"
+      );
+      return;
+    }
 
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
@@ -97,8 +114,12 @@ function Register() {
             value={password}
             onChange={onChange}
             required
+            minLength={8}
             className="w-full border p-2 rounded"
           />
+          <p className="mt-1 text-xs text-gray-500">
+            Must be at least 8 characters and include one uppercase letter and one number.
+          </p>
         </div>
 
         <div className="mb-6">
@@ -124,14 +145,18 @@ function Register() {
             !name ||
             !email ||
             !password ||
-            !confirmPassword
+            !confirmPassword ||
+            !isEmailValid ||
+            !isPasswordValid
           }
           className={`w-full p-2 rounded text-white transition ${
             status === "loading" ||
             !name ||
             !email ||
             !password ||
-            !confirmPassword
+            !confirmPassword ||
+            !isEmailValid ||
+            !isPasswordValid
               ? "bg-primary/50 cursor-not-allowed"
               : "bg-primary hover:opacity-100"
           }`}
