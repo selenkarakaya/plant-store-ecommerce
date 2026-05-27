@@ -10,13 +10,13 @@ const addToCart = (product_variant_id, quantity) => {
       { product_variant_id, quantity },
       { withCredentials: true }
     )
-    .then((res) => res.data); // sadece data döndür
+    .then((res) => res.data); // Return only the response data
 };
 
 const getCart = () => {
   return axios
     .get(`${API_URL}`, { withCredentials: true })
-    .then((res) => res.data); // sadece data döndür
+    .then((res) => res.data); // Return only the response data
 };
 
 const updateCartItemQuantity = (cartItemId, quantity) => {
@@ -26,13 +26,13 @@ const updateCartItemQuantity = (cartItemId, quantity) => {
       { quantity },
       { withCredentials: true }
     )
-    .then((res) => res.data); // sadece data döndür
+    .then((res) => res.data); // Return only the response data
 };
 
 const removeItemFromCart = (cartItemId) => {
   return axios
     .delete(`${API_URL}/remove/${cartItemId}`, { withCredentials: true })
-    .then((res) => res.data); // sadece data döndür
+    .then((res) => res.data); // Return only the response data
 };
 const cartService = {
   addToCart,

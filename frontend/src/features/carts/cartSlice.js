@@ -124,7 +124,7 @@ const cartSlice = createSlice({
           existing.total_price = updated.total_price;
         }
 
-        // Eğer quantity 0 olduysa (backend sildiyse), item'ı localden de çıkar
+        // If quantity becomes 0, remove the item locally as well
         if (updated.quantity === 0) {
           state.cart_items = state.cart_items.filter(
             (item) => item.id !== updated.id
@@ -140,7 +140,7 @@ const cartSlice = createSlice({
       })
       .addCase(removeItemFromCart.fulfilled, (state, action) => {
         state.status = "succeeded";
-        // Silinen öğeyi state.cart_items listesinden çıkar
+        // Remove the deleted item from state.cart_items
         state.cart_items = state.cart_items.filter(
           (item) => item.id !== action.meta.arg
         );
