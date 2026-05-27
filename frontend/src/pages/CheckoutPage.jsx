@@ -34,7 +34,10 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     dispatch(getCart());
-    dispatch(resetCheckoutStatus());
+
+    return () => {
+      dispatch(resetCheckoutStatus());
+    };
   }, [dispatch]);
 
   const subtotal = cart_items?.reduce(
@@ -81,6 +84,7 @@ const CheckoutPage = () => {
       dispatch(clearCart());
       toast.success("Order placed successfully! Thank you.");
       setTimeout(() => {
+        dispatch(resetCheckoutStatus());
         navigate("/me");
       }, 1000);
     } else if (checkoutStatus === "failed" && checkoutError) {
