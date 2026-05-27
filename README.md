@@ -1,18 +1,18 @@
-# 🌿 Plant Store – Online Houseplants E-Commerce Platform
+# Plant Store - Online Houseplants E-Commerce Platform
 
 An e-commerce web application for selling houseplants, built with modern technologies on both frontend and backend. The project includes a customer shopping experience with product browsing, cart management, checkout.
 
 <div align="center">
 
-### 🚀 Live Demo
+### Live Demo
 
-| 🌐 Live Application                                                 | 🔑 Test Account                                 |
-| ------------------------------------------------------------------- | ----------------------------------------------- |
-| 👉 [Click here](https://plantstore-production-748f.up.railway.app/) | 👉 Email: test@plantstore.com, Password: 123456 |
+| Live Application                                                   | Test Account                                   |
+| ------------------------------------------------------------------ | ---------------------------------------------- |
+| [Click here](https://plantstore-production-748f.up.railway.app/)   | Email: test@plantstore.com, Password: 123456   |
 
 </div>
 
-## 🧱 Tech Stack
+## Tech Stack
 
 ### Frontend
 
@@ -38,64 +38,64 @@ An e-commerce web application for selling houseplants, built with modern technol
 
 | Feature Category &nbsp;&nbsp; | Details                                                                                                                                                                                                                                                         |
 | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 🔐 Authentication             | - Email/password signup & login<br>- Google OAuth login<br>- JWT-based session persistence<br>- Protected routes                                                                                                                                                |
-| 🛍 Product System              | - Product listing with image, price, and details<br>- Product variant structure (e.g., size, type)<br>- Product detail page with dynamic variant display<br>- Search bar with case-insensitive matching<br>- Pagination with `1 2 3 ...` UI                     |
-| 🛒 Cart System                | - Backend-controlled cart tied to user<br>- Add to cart from product detail<br>- Increase/decrease quantity with stock validation<br>- Remove item from cart<br>- Total price and stock warnings<br>- Cart persistence per user session                         |
-| 💳 Checkout Page              | - Shipping information input<br>- Order summary (item image, name, variant, quantity, total)<br>- Ready structure for payment integration                                                                                                                       |
-| 📸 UI & UX                    | - Responsive design<br>- Cloudinary integration for product images<br>- Error/success notifications to user<br>- Loading states handled<br>- Styled and organized layout using Tailwind                                                                         |
-| 🧪 Backend                    | - PostgreSQL DB with proper schema: `users`, `products`, `product_variants`, `plant_details`, `carts`, `cart_items`<br>- Controllers and routes for all cart actions<br>- Secure user session handling with middleware<br>- Stock checks before cart operations |
+| Authentication                | - Email/password signup & login<br>- Google OAuth login<br>- JWT-based session persistence<br>- Protected routes                                                                                                                                                |
+| Product System                | - Product listing with image, price, and details<br>- Product variant structure (e.g., size, type)<br>- Product detail page with dynamic variant display<br>- Search bar with case-insensitive matching<br>- Pagination with `1 2 3 ...` UI                     |
+| Cart System                   | - Backend-controlled cart tied to user<br>- Add to cart from product detail<br>- Increase/decrease quantity with stock validation<br>- Remove item from cart<br>- Total price and stock warnings<br>- Cart persistence per user session                         |
+| Checkout Page                 | - Shipping information input<br>- Order summary (item image, name, variant, quantity, total)<br>- Ready structure for payment integration                                                                                                                       |
+| UI & UX                       | - Responsive design<br>- Cloudinary integration for product images<br>- Error/success notifications to user<br>- Loading states handled<br>- Styled and organized layout using Tailwind                                                                         |
+| Backend                       | - PostgreSQL DB with proper schema: `users`, `products`, `product_variants`, `plant_details`, `carts`, `cart_items`<br>- Controllers and routes for all cart actions<br>- Secure user session handling with middleware<br>- Stock checks before cart operations |
 
 ---
 
-## 🚧 Remaining Features (To Do)
+## Remaining Features (To Do)
 
-- [ ] 🛠 **Admin Panel**
+- [ ] Admin Panel
   - Product CRUD operations
   - Order and inventory management
-- [ ] ⭐ **Product Reviews System**
+- [ ] Product Reviews System
   - Users can leave reviews and ratings
   - Reviews displayed on product pages
-- [ ] 🎁 **Gift Card Feature**
+- [ ] Gift Card Feature
   - Digital gift card purchase and redemption
   - Discount application during checkout
-- [ ] 💸 Payment integration (e.g., Stripe)
-- [ ] 📜 Order history page for users
-- [ ] 📱 Improved mobile UX & responsiveness
+- [ ] Payment integration (e.g., Stripe)
+- [ ] Order history page for users
+- [ ] Improved mobile UX & responsiveness
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ### Backend
 
 ```
 /backend
-│
-├── controllers/
-├── routes/
-├── middlewares/
-├── config/
-├── db/
-├── server.js
+|
+|-- controllers/
+|-- routes/
+|-- middlewares/
+|-- config/
+|-- db/
+|-- app.js
 ```
 
 ### Frontend
 
 ```
 /frontend
-│
-├── src/
-│   ├── app/
-│   ├── components/
-│   ├── pages/
-│   ├── features/
-│   ├── utils/
-├── App.js
+|
+|-- src/
+|   |-- app/
+|   |-- components/
+|   |-- pages/
+|   |-- features/
+|   |-- utils/
+|-- App.js
 ```
 
 ---
 
-## 🧪 How to Run
+## How to Run
 
 ### Backend
 
@@ -118,7 +118,7 @@ npm run dev
 
 ---
 
-## 🔒 Environment Variables
+## Environment Variables
 
 Create a `.env` file in `/backend` directory:
 
@@ -126,25 +126,41 @@ Create a `.env` file in `/backend` directory:
 PORT=5000
 DATABASE_URL=postgres://<user>:<password>@localhost:5432/plant_store
 JWT_SECRET=your_jwt_secret
+JWT_EXPIRES_IN=7d
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:5000/auth/google/callback
+FRONTEND_URL=http://localhost:5173
+```
+
+For production, set these URLs to your deployed domains:
+
+```env
+GOOGLE_CALLBACK_URL=https://your-backend-domain.com/auth/google/callback
+FRONTEND_URL=https://your-frontend-domain.com
 ```
 
 Create a `.env` file in `/frontend` directory:
 
 ```env
-VITE_API_URL=
+VITE_API_URL=http://localhost:5000/api
+```
+
+For production:
+
+```env
+VITE_API_URL=https://your-backend-domain.com/api
 ```
 
 ---
 
-## 👩‍💻 Developer
+## Developer
 
-**Selen Nur Karakaya**  
+**Selen Nur Karakaya**
 Full-stack developer building modern e-commerce platforms for real-world usage.
 
 ---
 
-## 📃 License
+## License
 
-MIT License – Feel free to use, contribute, or fork!
+MIT License - Feel free to use, contribute, or fork!
